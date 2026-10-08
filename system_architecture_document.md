@@ -25,6 +25,7 @@ Each local branch operates independently, managing its own regional dataset gene
 * **Immediate Cleanup:** Any uploaded file saved temporarily to Google Drive must be processed, ingested, and immediately deleted (`Drive.Files.remove(file.getId())`) to maintain file hygiene.
 * **Soft Data Protections:** Repositories retain `Editor` permissions for branch users to allow inspection while using **Warning-Only Protections** (`protection.setWarningOnly(true)`) to minimize manual UI edit accidents without breaking Web App API executions.
 * **Multi-Repository Mapping:** The system must natively support users who belong to or manage multiple BAs.
+* **Repository Creation & Automatic Discovery:** The Web App will be used to create and maintain the spreadsheets used as repositories. Such repositories will be tagged (using custom Drive file properties), enabling the Web App to automatically search and discover which repositories the currently authenticated user has access to.
 
 ### Open Source & Transparency
 * **Public Code Base:** Source code will be version-controlled via GitHub (`clasp`).
@@ -218,5 +219,35 @@ function applySoftProtections(spreadsheetId) {
     const protection = sheet.protect().setDescription('Prevent Accidental Direct Edits');
     protection.setWarningOnly(true);
   });
+}
+```
+
+### 4.5 Repository Creation & Automatic Discovery (`RepositoryDiscovery.gs`)
+
+```javascript
+function createAndTagRepository(baId, baName) {
+  const ss = SpreadsheetApp.create(`BA Repository - ${baName} (${baId})`);
+  const spreadsheetId = ss.getId();
+  
+  // Tag the spreadsheet file with a custom Drive property so it can be automatically discovered
+  Drive.Properties.insert({
+    key: 'BA_REPOSITORY_ID',
+    value: baId,
+    visibility: 'PUBLIC'
+  }, spreadsheetId);
+  
+  applySoftProtections(spreadsheetId);
+  return spreadsheetId;
+}
+
+function discoverUserRepositories() {
+  // Search for files tagged with the BA repository property that the user has access to
+  const query = "properties has { key='BA_REPOSITORY_ID' and visibility='PUBLIC' } and trashed = false";
+  const files = Drive.Files.list({ q: query });
+  
+  return files.items.map(item => ({
+    spreadsheetId: item.id,
+    title: item.title
+  }));
 }
 ```
