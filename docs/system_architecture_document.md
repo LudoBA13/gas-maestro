@@ -51,88 +51,19 @@ Each local branch operates independently, managing its own regional dataset gene
 
 ```mermaid
 graph TD
-    classDef devStyle fill:#2d3748,stroke:#1a202c,stroke-width:2px,color:#fff;
-    classDef appStyle fill:#2b6cb0,stroke:#2c5282,stroke-width:2px,color:#fff;
-    classDef userStyle fill:#2f855a,stroke:#22543d,stroke-width:2px,color:#fff;
-    classDef tempStyle fill:#d69e2e,stroke:#744210,stroke-width:2px,color:#fff;
-    classDef sheetStyle fill:#319795,stroke:#234e52,stroke-width:2px,color:#fff;
-    classDef blockedStyle fill:#e53e3e,stroke:#9b2c2c,stroke-width:2px,color:#fff;
-    classDef auditStyle fill:#805ad5,stroke:#553c9a,stroke-width:2px,color:#fff;
-    classDef storeStyle fill:#4a5568,stroke:#2d3748,stroke-width:2px,color:#fff;
+    Author[App Author] -->|Updates Code / Deployment| WebApp[GAS Web App]
+    Author -.->|No Access| Sheets
+    Author -.->|No Access| UserProps
 
-    subgraph Org ["Google Workspace Organization"]
-        
-        Developer["Developer / App Owner<br/><i>Pushes Code via clasp / Git</i>"]:::devStyle
-        
-        WebApp["Google Apps Script Web App<br/><b>Execution Context: Current Accessing User</b>"]:::appStyle
+    User([User / Browser]) -->|Accesses Web App| WebApp
+    WebApp -->|Executes as Current User<br/>USER_DEPLOYED| UserProps[(User Properties<br/><i>Spreadsheet IDs</i>)]
+    WebApp -->|Reads/Writes Data| Sheets[(Google Sheets<br/><i>Data Repository</i>)]
+    WebApp -->|API Requests| AssoConnect[AssoConnect API]
 
-        subgraph OpenSource ["Public Transparency Layer"]
-            GitHubRepo["GitHub Repository<br/><b>Open Source Code</b>"]:::auditStyle
-            ReadOnlyGAS["Read-Only GAS Project<br/><b>View-Only Script Link</b>"]:::auditStyle
-        end
-
-        subgraph BA1 ["Banque Alimentaire 1 (BA 1)"]
-            User1A["Jean (BA 1)"]:::userStyle
-            User1B["Lucie (BA 1)"]:::userStyle
-            Prop1A["UserProperties (Jean)<br/><b>Stores Array of Repos</b>"]:::storeStyle
-            Prop1B["UserProperties (Lucie)<br/><b>Stores Array of Repos</b>"]:::storeStyle
-            Temp1["Temp Drive File<br/><i>Uploaded, Parsed & Deleted</i>"]:::tempStyle
-            Sheet1["BA 1 Sheet Repository<br/><b>Permissions: Jean & Lucie are Editors</b><br/><i>(Soft Warning Protection)</i>"]:::sheetStyle
-        end
-
-        subgraph BA2 ["Banque Alimentaire 2 (BA 2)"]
-            User2["Marc (BA 2)"]:::userStyle
-            Prop2["UserProperties (Marc)<br/><b>Stores Array of Repos</b>"]:::storeStyle
-            Temp2["Temp Drive File<br/><i>Uploaded, Parsed & Deleted</i>"]:::tempStyle
-            Sheet2["BA 2 Sheet Repository<br/><b>Permissions: Marc is Editor</b><br/><i>(Soft Warning Protection)</i>"]:::sheetStyle
-        end
-
-        NoAccess["Developer Access Blocked<br/><b>Zero Permissions to BA Sheets/User Properties</b>"]:::blockedStyle
-
+    subgraph Google Workspace - User Boundary
+        UserProps
+        Sheets
     end
-
-    %% Deployment & Transparency Flow
-    Developer -->|1. Syncs Source Code| GitHubRepo
-    Developer -->|2. Deploys & Updates| WebApp
-    WebApp -.->|Read-Only Shared Link| ReadOnlyGAS
-
-    %% Audit Access
-    User1A -.->|Audits Code| GitHubRepo
-    User1A -.->|Inspects Scopes/Code| ReadOnlyGAS
-    User1B -.->|Audits Code| GitHubRepo
-    User1B -.->|Inspects Scopes/Code| ReadOnlyGAS
-    User2 -.->|Audits Code| GitHubRepo
-    User2 -.->|Inspects Scopes/Code| ReadOnlyGAS
-
-    %% App Execution Flow - BA 1 (Jean)
-    User1A -->|3. Runs Web App| WebApp
-    WebApp -->|4. Reads/Writes Array| Prop1A
-    User1A -->|5. Uploads File| Temp1
-    Temp1 -->|6. Appends Data & Deletes| Sheet1
-
-    %% App Execution Flow - BA 1 (Lucie)
-    User1B -->|3. Runs Web App| WebApp
-    WebApp -->|4. Reads/Writes Array| Prop1B
-
-    %% App Execution Flow - BA 2 (Marc)
-    User2 -->|3. Runs Web App| WebApp
-    WebApp -->|4. Reads/Writes Array| Prop2
-    User2 -->|5. Uploads File| Temp2
-    Temp2 -->|6. Appends Data & Deletes| Sheet2
-
-    %% Access Control Isolation
-    Developer -.-x|NO ACCESS| Sheet1
-    Developer -.-x|NO ACCESS| Sheet2
-    Developer -.-x|NO ACCESS| Prop1A
-    Developer -.-x|NO ACCESS| Prop1B
-    Developer -.-x|NO ACCESS| Prop2
-    User1A -.-x|NO ACCESS| Prop1B
-    User1A -.-x|NO ACCESS| Prop2
-    User1B -.-x|NO ACCESS| Prop1A
-    User1B -.-x|NO ACCESS| Prop2
-    User2 -.-x|NO ACCESS| Prop1A
-    User2 -.-x|NO ACCESS| Prop1B
-    Developer -.-x|Enforced by Workspace ACLs & GAS Scope| NoAccess
 ```
 
 ---
