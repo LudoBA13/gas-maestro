@@ -65,6 +65,10 @@
 
 			<p v-if="statusMessage" style="margin-top: 20px; font-weight: bold;" :style="{ color: statusColor }">{{ statusMessage }}</p>
 		</div>
+
+		<footer style="margin-top: 40px; text-align: center; color: #666; font-size: 0.9em; border-top: 1px solid #eee; padding-top: 15px;">
+			Connecté en tant que : <strong>{{ currentUserEmail }}</strong>
+		</footer>
 	</div>
 
 	<script>
@@ -77,6 +81,7 @@
 				const loading = ref(true);
 				const statusMessage = ref('');
 				const statusColor = ref('green');
+				const currentUserEmail = ref('Chargement...');
 
 				const loadRepositories = () =>
 				{
@@ -94,6 +99,20 @@
 							loading.value = false;
 						})
 						.getUserRepositories();
+				};
+
+				const loadUserEmail = () =>
+				{
+					google.script.run
+						.withSuccessHandler(email =>
+						{
+							currentUserEmail.value = email;
+						})
+						.withFailureHandler(() =>
+						{
+							currentUserEmail.value = 'Utilisateur inconnu';
+						})
+						.getCurrentUserEmail();
 				};
 
 				const removeRepository = (index) =>
@@ -145,6 +164,7 @@
 				onMounted(() =>
 				{
 					loadRepositories();
+					loadUserEmail();
 				});
 
 				return {
@@ -152,6 +172,7 @@
 					loading,
 					statusMessage,
 					statusColor,
+					currentUserEmail,
 					removeRepository,
 					saveRepositories,
 					autoGenerateRepository

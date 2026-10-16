@@ -25,6 +25,11 @@ function saveUserRepositories (repos)
 	return { success: true };
 }
 
+function getCurrentUserEmail ()
+{
+	return Session.getActiveUser().getEmail() || 'Unknown user';
+}
+
 function getOrCreateAutoRepository ()
 {
 	const email = Session.getActiveUser().getEmail() || '';
