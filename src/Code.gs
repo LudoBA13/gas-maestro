@@ -25,8 +25,27 @@ function saveUserRepositories (repos)
 	return { success: true };
 }
 
-function createAndTagRepository (baId, baName)
+function getOrCreateAutoRepository ()
 {
+	const email = Session.getActiveUser().getEmail() || '';
+	const match = email.match (/^(ba[0-9]+)\./i);
+	
+	if (!match)
+	{
+		throw new Error('User email not recognized for automatic repository generation (expected format: baXX.*)');
+	}
+	
+	const baId = match[1].toLowerCase();
+	const baName = baId.toUpperCase();
+	
+	const repos = getUserRepositories();
+	const existing = repos.find(r => r.baId === baId);
+	
+	if (existing)
+	{
+		return existing;
+	}
+	
 	const ss = SpreadsheetApp.create('BA Repository - ' + baName + ' (' + baId + ')');
 	const spreadsheetId = ss.getId();
 	
@@ -59,7 +78,6 @@ function createAndTagRepository (baId, baName)
 	});
 	
 	const newRepo = { baId, baName, spreadsheetId };
-	const repos = getUserRepositories();
 	repos.push(newRepo);
 	saveUserRepositories(repos);
 	
