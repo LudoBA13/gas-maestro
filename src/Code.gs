@@ -27,7 +27,12 @@ function createAndTagRepository(baId, baName) {
       visibility: 'PUBLIC'
     }, spreadsheetId);
   } catch (e) {
-    ss.setDescription(`BA_REPOSITORY_ID: ${baId}`);
+    try {
+      const file = DriveApp.getFileById(spreadsheetId);
+      file.setDescription(`BA_REPOSITORY_ID: ${baId}`);
+    } catch (err) {
+      // Ignore fallback failure
+    }
   }
   
   const sheets = ss.getSheets();
