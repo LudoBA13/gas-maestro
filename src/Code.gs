@@ -1,7 +1,7 @@
 function doGet (e)
 {
 	return HtmlService.createHtmlOutputFromFile('Index')
-		.setTitle('Gas Maestro - Configuration')
+		.setTitle('Maestro - Configuration')
 		.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
@@ -44,13 +44,60 @@ function getOrCreateAutoRepository ()
 	const baName = baId.toUpperCase();
 	
 	const repos = getUserRepositories();
-	const existing = repos.find(r => r.baId === baId);
+	let repo = repos.find(r => r.baId === baId);
 	
-	if (existing)
+	if (repo)
 	{
-		return existing;
+		return repo;
 	}
 	
+	// Search Google Drive for existing repository with matching BA_REPOSITORY_ID property
+	try
+	{
+		const query = 'properties has { key=\'BA_REPOSITORY_ID\' and value=\'' + baId + '\' and visibility=\'PUBLIC\' } and trashed = false';
+		const result = Drive.Files.list({ q: query });
+		
+		if (result && result.items && result.items.length > 0)
+		{
+			const fileItem = result.items[0];
+			repo = {
+				baId: baId,
+				baName: baName,
+				spreadsheetId: fileItem.id
+			};
+			repos.push(repo);
+			saveUserRepositories(repos);
+			return repo;
+		}
+	}
+	catch (e)
+	{
+		try
+		{
+			const files = DriveApp.searchFiles('trashed = false');
+			while (files.hasNext())
+			{
+				const file = files.next();
+				if (file.getName().toLowerCase().includes(baId) || file.getDescription().includes(baId))
+				{
+					repo = {
+						baId: baId,
+						baName: baName,
+						spreadsheetId: file.getId()
+					};
+					repos.push(repo);
+					saveUserRepositories(repos);
+					return repo;
+				}
+			}
+		}
+		catch (err)
+		{
+			// Ignore search fallback failure and proceed to creation
+		}
+	}
+	
+	// If still not found, create a new repository spreadsheet
 	const ss = SpreadsheetApp.create('BA Repository - ' + baName + ' (' + baId + ')');
 	const spreadsheetId = ss.getId();
 	
@@ -82,9 +129,9 @@ function getOrCreateAutoRepository ()
 		protection.setWarningOnly(true);
 	});
 	
-	const newRepo = { baId, baName, spreadsheetId };
-	repos.push(newRepo);
+	repo = { baId, baName, spreadsheetId };
+	repos.push(repo);
 	saveUserRepositories(repos);
 	
-	return newRepo;
+	return repo;
 }
