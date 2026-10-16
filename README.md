@@ -26,3 +26,7 @@ graph TD
         Sheets
     end
 ```
+
+## Development Notes
+- **AI Assistance**: Development is assisted and/or augmented using Gemini.
+- **Languages**: All development resources (code, comments, and technical documentation) are maintained in English, whereas the user interface (UI) is localized in French.
