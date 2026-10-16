@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Gas Maestro - Configuration</title>
+  <!-- Vue 3 from Global CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 20px; background: #f5f7fa; color: #333; }
+    .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h1, h2 { color: #2c3e50; }
+    .nav { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .nav button { background: #42b983; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+    .nav button.active { background: #35495e; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #f8f9fa; }
+    input, button { padding: 8px 12px; margin-right: 8px; border-radius: 4px; border: 1px solid #ccc; }
+    button.primary { background: #42b983; color: white; border: none; cursor: pointer; }
+    button.danger { background: #e53e3e; color: white; border: none; cursor: pointer; }
+    .form-group { margin-bottom: 15px; }
+    .loading { color: #666; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div id="app" class="container">
+    <h1>Gas Maestro - Centre de Contrôle</h1>
+    <div class="nav">
+      <button class="active">Configuration : Dépôts de Données</button>
+    </div>
+
+    <div v-if="loading" class="loading">Chargement des dépôts...</div>
+
+    <div v-else>
+      <h2>Gestion des Dépôts Google Sheets</h2>
+      <p>Configurez et gérez vos dépôts de données reliés (stockés dans vos propriétés utilisateur).</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Identifiant (BA ID)</th>
+            <th>Nom du Dépôt</th>
+            <th>ID du Google Sheet</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(repo, index) in repositories" :key="index">
+            <td><input v-model="repo.baId" type="text" /></td>
+            <td><input v-model="repo.baName" type="text" /></td>
+            <td><input v-model="repo.spreadsheetId" type="text" style="width: 250px;" /></td>
+            <td>
+              <button class="danger" @click="removeRepository(index)">Supprimer</button>
+            </td>
+          </tr>
+          <tr v-if="repositories.length === 0">
+            <td colspan="4" style="text-align: center;">Aucun dépôt configuré.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: 20px;">
+        <button class="primary" @click="addEmptyRepository">+ Ajouter une ligne</button>
+        <button class="primary" @click="createNewSheetRepository" style="background: #319795;">+ Créer un nouveau Sheet</button>
+        <button class="primary" @click="saveRepositories" style="background: #2b6cb0; float: right;">Enregistrer les modifications</button>
+      </div>
+
+      <p v-if="statusMessage" style="margin-top: 20px; font-weight: bold;" :style="{ color: statusColor }">{{ statusMessage }}</p>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const repositories = ref([]);
+        const loading = ref(true);
+        const statusMessage = ref('');
+        const statusColor = ref('green');
+
+        const loadRepositories = () => {
+          loading.value = true;
+          google.script.run
+            .withSuccessHandler(data => {
+              repositories.value = data;
+              loading.value = false;
+            })
+            .withFailureHandler(err => {
+              statusMessage.value = 'Erreur lors du chargement: ' + err.message;
+              statusColor.value = 'red';
+              loading.value = false;
+            })
+            .getUserRepositories();
+        };
+
+        const addEmptyRepository = () => {
+          repositories.value.push({ baId: '', baName: '', spreadsheetId: '' });
+        };
+
+        const removeRepository = (index) => {
+          repositories.value.splice(index, 1);
+        };
+
+        const saveRepositories = () => {
+          statusMessage.value = 'Enregistrement en cours...';
+          statusColor.value = 'blue';
+          google.script.run
+            .withSuccessHandler(() => {
+              statusMessage.value = 'Modifications enregistrées avec succès !';
+              statusColor.value = 'green';
+            })
+            .withFailureHandler(err => {
+              statusMessage.value = 'Erreur lors de l\'enregistrement: ' + err.message;
+              statusColor.value = 'red';
+            })
+            .saveUserRepositories(repositories.value);
+        };
+
+        const createNewSheetRepository = () => {
+          const baId = prompt("Entrez l'identifiant de la Banque Alimentaire (ex: BA_13):");
+          if (!baId) return;
+          const baName = prompt("Entrez le nom de la Banque Alimentaire (ex: BA Marseille):");
+          if (!baName) return;
+
+          statusMessage.value = 'Création du Google Sheet en cours...';
+          statusColor.value = 'blue';
+
+          google.script.run
+            .withSuccessHandler(newRepo => {
+              repositories.value.push(newRepo);
+              statusMessage.value = 'Nouveau dépôt créé et enregistré !';
+              statusColor.value = 'green';
+            })
+            .withFailureHandler(err => {
+              statusMessage.value = 'Erreur lors de la création: ' + err.message;
+              statusColor.value = 'red';
+            })
+            .createAndTagRepository(baId, baName);
+        };
+
+        onMounted(() => {
+          loadRepositories();
+        });
+
+        return {
+          repositories,
+          loading,
+          statusMessage,
+          statusColor,
+          addEmptyRepository,
+          removeRepository,
+          saveRepositories,
+          createNewSheetRepository
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
