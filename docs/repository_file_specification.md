@@ -1,22 +1,27 @@
 # Repository File Specification
 
 ## Overview
-A repository file in **Maestro** is a dedicated Google Spreadsheet acting as the primary local data repository for a specific Banque Alimentaire (BA) branch.
+A repository file in **Maestro** is a dedicated Google Sheet acting as the primary local data repository for a specific Banque Alimentaire (BA) branch. The specific document is referred to using its Google Sheet document ID.
 
 ## Key Characteristics & Structure
 
-### 1. Identification & Automatic Discovery
+### 1. Identification & Relationship
+- **Document Reference**: Identified and referred to by its Google Sheet document ID.
+- **BA Association**: The repository is related to a BA via `baId`. The `baId` usually matches `/^ba\d{3}$/`, although exceptions may exist.
 - **Naming Convention**: `BA Repository - [BA_NAME] ([BA_ID])` (e.g., `BA Repository - BA13 (ba13)`).
 - **Drive File Properties**: Tagged with a custom public Drive property:
   - Key: `BA_REPOSITORY_ID`
   - Value: The normalized BA identifier (e.g., `ba13`, `ba83`).
-- **Auto-Discovery**: When a user accesses the web app, their email is parsed against `/^(ba[0-9]+)\./i`. The application checks local `UserProperties` and searches Google Drive for any existing repository matching the `baId` before creating a new one.
 
-### 2. Permissions & Security Model
+### 2. Sheet Structure & Initial State
+- **Empty Repository State**: An empty repository consists of a single sheet named `Parameters`.
+- **Parameters Sheet**: Features two columns serving to store key/value pairs. By default, key/value pairs for `baId` and `baName` are set at creation time.
+
+### 3. Permissions & Security Model
 - **Ownership & Access**: Created and owned by/accessible to the branch user within their Google Workspace boundary. The developer/app author has zero access.
 - **Soft Protections**: All sheets within the repository have warning-only protections applied programmatically (`protection.setWarningOnly(true)`) to prevent accidental structural edits by users while permitting script-driven data appends and manual inspection.
 
-### 3. Configuration & Persistence
+### 4. Configuration & Persistence
 - **State Storage**: Stored in Google Apps Script `UserProperties` under the key `BA_REPOSITORIES` as a serialized JSON array of repository mappings:
   ```json
   [
@@ -28,5 +33,5 @@ A repository file in **Maestro** is a dedicated Google Spreadsheet acting as the
   ]
   ```
 
-### 4. Data Usage
+### 5. Data Usage
 - Stores ingested, structured data extracted from external data sources (starting with **AssoConnect**).
