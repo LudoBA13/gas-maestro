@@ -6,6 +6,11 @@ A DB file in **Maestro** is a dedicated Google Sheet acting as the primary local
 ### Core Design Decisions
 - **Terminology ("DB")**: Storage targets are referred to as **"DB"** (Database) rather than "Repository" to avoid confusion with Git repositories and to signal that while Google Sheets is currently used for data storage, data could be stored in any underlying database backend.
 - **No Google Sheet Formulae**: The system strictly avoids relying on Google Sheet formulae to prevent needlessly introducing another programming language (formulas). All data formatting, computations, and processing are handled entirely within the application code (`Maestro`).
+- **Classic DBMS Mapping**:
+  - **Spreadsheet = Database (DB)**: Each Google Sheet file represents an isolated DB instance for a specific branch.
+  - **Sheet = Table**: Individual worksheets within the spreadsheet represent database tables.
+  - **Header Row = Table Schema**: Each table starts with a mandatory header row defining column fields.
+  - **DBMS-Compatible Abstraction**: DB operations are designed with semantic interfaces (table creation, schema alteration, row insertion/querying) to mirror classic DBMS concepts and simplify future migration to a full DBMS stack.
 
 ## Key Characteristics & Structure
 

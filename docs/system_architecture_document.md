@@ -37,7 +37,14 @@ Each local branch operates independently, managing its own regional dataset gene
 
 ## 3. Core Technical Architecture
 
-### 3.1 Components
+### 3.1 Classic DBMS Conceptual Mapping
+To ensure seamless future migration to a full DBMS stack, Maestro maps spreadsheet storage to classic relational database concepts:
+- **Spreadsheet ⟷ Database (DB)**: Each Google Sheet file functions as an independent database instance.
+- **Worksheet (Sheet) ⟷ Table**: Individual sheets inside a spreadsheet represent database tables.
+- **Header Row ⟷ Table Schema**: The first row of each sheet defines the table column schema.
+- **DB Abstraction Layer**: Data operations (table creation, schema alteration, insertion, querying) are structured around DBMS-compatible semantics rather than spreadsheet-specific idioms.
+
+### 3.2 Components
 
 | Component | Technology | Description |
 | :--- | :--- | :--- |
