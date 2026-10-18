@@ -14,19 +14,29 @@ Maestro is a Google Apps Script (GAS) web application serving as a centralized c
 ## Architecture Diagram
 ```mermaid
 graph TD
-    Author[App Author] -->|Read, Modify, and Execute Code| WebApp[GAS Web App]
-    Author -.->|No Access| UserBoundary
+    Author([App Author]) -->|Can read or modify| Code[Code]
+    Author -.-x|No Access|UserBoundary
     
-    User([User]) -->|Read and Execute Code, <br/>but not Modify| WebApp
-    WebApp -->|Executes as Current User<br/>USER_DEPLOYED| UserProps[(User Properties<br/><i>Spreadsheet IDs</i>)]
+    User([User]) -->|Can only read| Code
+    User -->|Accesses Web App <br/> Executes as Current User| WebApp[Web App]
+    Code -->|Deployment / Execution| WebApp
     WebApp -->|Reads/Writes Data| Sheets[(Google Sheets<br/><i>Data Repository</i>)]
+    WebApp -->|Accesses Properties| UserProps[(User Properties<br/><i>Spreadsheet IDs</i>)]
     
     subgraph UserBoundary [Google Workspace - User Boundary]
         UserProps
         Sheets
     end
 
-    linkStyle 1 stroke:#ff0000
+    classDef authorStyle stroke:#0000ff;
+    classDef userStyle stroke:#ff0000;
+    classDef userBoundaryStyle stroke:#ff0000;
+    class Author authorStyle;
+    class User userStyle;
+    class UserBoundary userBoundaryStyle;
+
+    linkStyle 0,1,4 stroke:#0000ff
+    linkStyle 2,3,5,6 stroke:#ff0000
 ```
 
 ## Development Notes
