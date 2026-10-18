@@ -8,6 +8,7 @@ Maestro is a Google Apps Script (GAS) web application serving as a centralized c
 - **Data Repository**: Google Sheets.
 - **Configuration**: Spreadsheet IDs are stored in User Properties.
 - **Multi-Repository Support**: Users can configure and manage multiple data repositories, while single-repository usage remains the default for the vast majority of users.
+- **Namespacing & Global Scope**: To prevent name collisions and global namespace pollution, Google Apps Script evaluates `.gs` files alphabetically. The alphabetically first file (`_Maestro.gs`) declares the single global symbol `const Maestro = {};`. All application logic, classes, and helper functions are attached as properties of `Maestro`.
 
 ## Architecture Diagram
 ```mermaid

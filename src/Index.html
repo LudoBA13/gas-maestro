@@ -98,7 +98,7 @@
 							statusColor.value = 'red';
 							loading.value = false;
 						})
-						.getUserRepositories();
+						.Maestro_getUserRepositories();
 				};
 
 				const loadUserEmail = () =>
@@ -112,7 +112,7 @@
 						{
 							currentUserEmail.value = 'Utilisateur inconnu';
 						})
-						.getCurrentUserEmail();
+						.Maestro_getCurrentUserEmail();
 				};
 
 				const removeRepository = (index) =>
@@ -135,7 +135,7 @@
 							statusMessage.value = 'Erreur lors de l\'enregistrement: ' + err.message;
 							statusColor.value = 'red';
 						})
-						.saveUserRepositories(repositories.value);
+						.Maestro_saveUserRepositories(repositories.value);
 				};
 
 				const autoGenerateRepository = () =>
@@ -158,7 +158,7 @@
 							statusMessage.value = 'Erreur lors de la génération automatique: ' + err.message;
 							statusColor.value = 'red';
 						})
-						.getOrCreateAutoRepository();
+						.Maestro_getOrCreateAutoRepository();
 				};
 
 				onMounted(() =>

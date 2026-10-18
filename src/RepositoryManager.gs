@@ -2,7 +2,7 @@
  * RepositoryManager class
  * Handles creation and management of BA repository Google Sheets.
  */
-class RepositoryManager
+Maestro.RepositoryManager = class RepositoryManager
 {
 	static createRepository (baId, baName)
 	{
@@ -85,7 +85,6 @@ class RepositoryManager
 			if (result && result.items && result.items.length > 0)
 			{
 				const fileItem = result.items[0];
-				const ss = SpreadsheetApp.openById(fileItem.id);
 				return {
 					baId: normalizedBaId,
 					baName: normalizedBaId.toUpperCase(),
@@ -122,13 +121,13 @@ class RepositoryManager
 
 	static getOrCreateRepositoryForBa (baId, baName)
 	{
-		let repo = RepositoryManager.findRepositoryByBaId(baId);
+		let repo = Maestro.RepositoryManager.findRepositoryByBaId(baId);
 		
 		if (!repo)
 		{
-			repo = RepositoryManager.createRepository(baId, baName);
+			repo = Maestro.RepositoryManager.createRepository(baId, baName);
 		}
 		
 		return repo;
 	}
-}
+};

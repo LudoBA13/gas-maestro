@@ -66,6 +66,15 @@ graph TD
     end
 ```
 
+### 3.3 Namespacing & Global Scope
+To eliminate name collisions and prevent pollution of the global scope in Google Apps Script:
+- **Alphabetical Evaluation Order**: Google Apps Script compiles and executes `.gs` files in alphabetical order.
+- **Root Namespace (`_Maestro.gs`)**: The alphabetically first file (`_Maestro.gs`) initializes the single global symbol:
+  ```javascript
+  const Maestro = {};
+  ```
+- **Scope Restriction**: No other `.gs` file may pollute the global scope. All classes (`Maestro.RepositoryManager`), modules, and methods are attached as properties of the `Maestro` namespace object. Thin global wrapper functions are defined solely in `_Maestro.gs` to expose required GAS entry points (e.g., `doGet`, `getUserRepositories`).
+
 ---
 
 ## 4. Implementation Details
