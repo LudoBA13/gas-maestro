@@ -1,28 +1,32 @@
-# Repository File Specification
+# DB File Specification
 
 ## Overview
-A repository file in **Maestro** is a dedicated Google Sheet acting as the primary local data repository for a specific Banque Alimentaire (BA) branch. The specific document is referred to using its Google Sheet document ID.
+A DB file in **Maestro** is a dedicated Google Sheet acting as the primary local data store for a specific Banque Alimentaire (BA) branch. 
+
+### Core Design Decisions
+- **Terminology ("DB")**: Storage targets are referred to as **"DB"** (Database) rather than "Repository" to avoid confusion with Git repositories and to signal that while Google Sheets is currently used for data storage, data could be stored in any underlying database backend.
+- **No Google Sheet Formulae**: The system strictly avoids relying on Google Sheet formulae to prevent needlessly introducing another programming language (formulas). All data formatting, computations, and processing are handled entirely within the application code (`Maestro`).
 
 ## Key Characteristics & Structure
 
 ### 1. Identification & Relationship
 - **Document Reference**: Identified and referred to by its Google Sheet document ID.
-- **BA Association**: The repository is related to a BA via `baId`. The `baId` usually matches `/^ba\d{3}$/`, although exceptions may exist.
-- **Naming Convention**: `BA Repository - [BA_NAME] ([BA_ID])` (e.g., `BA Repository - BA13 (ba13)`).
+- **BA Association**: The DB is related to a BA via `baId`. The `baId` usually matches `/^ba\d{3}$/`, although exceptions may exist.
+- **Naming Convention**: `BA DB - [BA_NAME] ([BA_ID])` (e.g., `BA DB - BA13 (ba13)`).
 - **Drive File Properties**: Tagged with a custom public Drive property:
   - Key: `BA_REPOSITORY_ID`
   - Value: The normalized BA identifier (e.g., `ba13`, `ba83`).
 
 ### 2. Sheet Structure & Initial State
-- **Empty Repository State**: An empty repository consists of a single sheet named `Parameters`.
+- **Empty DB State**: An empty DB consists of a single sheet named `Parameters`.
 - **Parameters Sheet**: Features two columns serving to store key/value pairs. By default, key/value pairs for `baId` and `baName` are set at creation time.
 
 ### 3. Permissions & Security Model
 - **Ownership & Access**: Created and owned by/accessible to the branch user within their Google Workspace boundary. The developer/app author has zero access.
-- **Soft Protections**: All sheets within the repository have warning-only protections applied programmatically (`protection.setWarningOnly(true)`) to prevent accidental structural edits by users while permitting script-driven data appends and manual inspection.
+- **Soft Protections**: All sheets within the DB have warning-only protections applied programmatically (`protection.setWarningOnly(true)`) to prevent accidental structural edits by users while permitting script-driven data appends and manual inspection.
 
 ### 4. Configuration & Persistence
-- **State Storage**: Stored in Google Apps Script `UserProperties` under the key `BA_REPOSITORIES` as a serialized JSON array of repository mappings:
+- **State Storage**: Stored in Google Apps Script `UserProperties` under the key `BA_REPOSITORIES` as a serialized JSON array of DB mappings:
   ```json
   [
     {

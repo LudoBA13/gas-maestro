@@ -21,11 +21,13 @@ Each local branch operates independently, managing its own regional dataset gene
 * **Isolated User Storage:** User configurations (e.g., target Sheet references) must strictly use `PropertiesService.getUserProperties()`, guaranteeing isolation across accounts.
 
 ### Data Management & Hygiene
+* **Terminology ("DB")**: Storage targets are referred to as **"DB"** (Database) rather than "Repository" to avoid confusion with Git repositories and signal that while Google Sheets is currently used for data storage, data could be stored in any underlying database backend.
+* **No Google Sheet Formulae**: The system strictly avoids relying on Google Sheet formulae to prevent needlessly introducing another programming language (formulas). All data formatting, computations, and processing are handled entirely within the application code (`Maestro`).
 * **Data Ingestion via File Upload:** Users can upload local data files (e.g., CSV/TSV) through the Web App.
 * **Immediate Cleanup:** Any uploaded file saved temporarily to Google Drive must be processed, ingested, and immediately deleted (`Drive.Files.remove(file.getId())`) to maintain file hygiene.
-* **Soft Data Protections:** Repositories retain `Editor` permissions for branch users to allow inspection while using **Warning-Only Protections** (`protection.setWarningOnly(true)`) to minimize manual UI edit accidents without breaking Web App API executions.
-* **Multi-Repository Mapping:** The system must natively support users who belong to or manage multiple BAs.
-* **Repository Creation & Automatic Discovery:** The Web App will be used to create and maintain the spreadsheets used as repositories. Such repositories will be tagged (using custom Drive file properties), enabling the Web App to automatically search and discover which repositories the currently authenticated user has access to.
+* **Soft Data Protections:** DBs retain `Editor` permissions for branch users to allow inspection while using **Warning-Only Protections** (`protection.setWarningOnly(true)`) to minimize manual UI edit accidents without breaking Web App API executions.
+* **Multi-DB Mapping:** The system must natively support users who belong to or manage multiple BAs.
+* **DB Creation & Automatic Discovery:** The Web App will be used to create and maintain the spreadsheets used as DBs. Such DBs will be tagged (using custom Drive file properties), enabling the Web App to automatically search and discover which DBs the currently authenticated user has access to.
 
 ### Open Source & Transparency
 * **Public Code Base:** Source code will be version-controlled via GitHub (`clasp`).
